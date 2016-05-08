@@ -84,7 +84,7 @@ public class TestPluginsReactBot {
 				return;
 			}
 			try {
-				PORT = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the port of the target server (cancel for default):", "TPReactionFarm", JOptionPane.QUESTION_MESSAGE));
+				PORT = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the port of the target server (enter for default):", "TPReactionFarm", JOptionPane.QUESTION_MESSAGE));
 			} catch (NullPointerException e) {
 				System.out.println("No server port was specified (clicked cancel button), quitting.");
 				return;
@@ -133,7 +133,7 @@ public class TestPluginsReactBot {
 						if (message.getFullText().startsWith(" The word was ")) {
 							String word = message.getFullText().substring(14);
 							if (!words.contains(word)) {
-								words.add(word);
+								words.add(word); out.println(word);
 								System.out.println("Added word \"" + word + "\" to list (" + words.size() + " words in total).");
 							} else {
 								System.out.println("Failed to unscramble word \"" + word + "\".");
@@ -167,17 +167,26 @@ public class TestPluginsReactBot {
 										}
 									} else if (game.startsWith("Type")) {
 										if (!words.contains(word)) {
-											words.add(word);
+											words.add(word); out.println(word);
 											System.out.println("Added word \"" + word + "\" to list (" + words.size() + " words in total).");
 										}
 										event.getSession().send(new ClientChatPacket(word));
 									}
 								} else {
-									;
+									boolean next = false;
+									for (int i = 0; i < obj.getAsJsonArray("extra").size(); i++) {
+										String word = obj.getAsJsonArray("extra").get(i).getAsJsonObject().get("text").getAsString();
+										if (next) {
+											if (!words.contains(word)) {
+												words.add(word); out.println(word);
+												System.out.println("Added word \"" + word + "\" to list (" + words.size() + " words in total).");
+											}
+											break;
+										} else if (word.equals("'")) next = true;
+									}
 								}
 							} catch (Exception e) {
-								if (message.getFullText().contains("Scramble")) System.out.println(message.toJsonString());
-								System.out.println(message.getFullText());
+								System.out.println(message.getFullText().replaceAll("§[0-9a-fk-o]", ""));
 							}
 						}
 					}
