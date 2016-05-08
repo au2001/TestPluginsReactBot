@@ -155,13 +155,14 @@ public class TestPluginsReactBot implements SessionListener {
 
 	public static void autoRespond (String message) {
 		while (message.startsWith(" ")) message = message.substring(1);
+		if (message.startsWith("Reaction » ") || message.startsWith("Scramble » ")) return;
 		if (message.contains("»")) {
 			String username = message.split("»")[0].replaceAll("\\[.*?\\]", "").replace(" ", "");
 			if (username.equalsIgnoreCase(protocol.getProfile().getName())) return;
 			message = message.substring(message.indexOf("»")).toLowerCase();
 			while (message.startsWith(" ")) message = message.substring(1);
 			if (message.contains(protocol.getProfile().getName().toLowerCase())) {
-				if (message.matches(".*(url|link|info|give|github|download).*"))
+				if (message.matches(".*(what|url|link|info|give|github|download).*"))
 					client.getSession().send(new ClientChatPacket(username + ", my bot is available on GitHub: git.io/vwjTZ"));
 				else if (message.matches(".*(stop|shut *(the fuck)? *(up|down)|stfu|sleep|fuck( *you)?|fu).*"))
 					client.getSession().send(new ClientChatPacket("Sorry " + username + ", I can only be stopped by " + protocol.getProfile().getName() + "."));
