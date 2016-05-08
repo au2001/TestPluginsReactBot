@@ -4,7 +4,7 @@
 
 	<groupId>me.au2001</groupId>
 	<artifactId>TestPluginsReactBot</artifactId>
-	<version>0.8.2-SNAPSHOT</version>
+	<version>0.9-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>TestPluginsReactBot</name>
@@ -60,6 +60,11 @@
 			<groupId>org.spacehq</groupId>
 			<artifactId>mcprotocollib</artifactId>
 			<version>1.9.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.udojava</groupId>
+			<artifactId>EvalEx</artifactId>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 </project>

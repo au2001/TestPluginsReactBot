@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.net.Proxy;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
@@ -30,6 +31,7 @@ import org.spacehq.packetlib.tcp.TcpSessionFactory;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.udojava.evalex.Expression;
 
 public class TestPluginsReactBot implements SessionListener {
 
@@ -39,13 +41,12 @@ public class TestPluginsReactBot implements SessionListener {
 	private static Client client;
 	private static Scanner in;
 	private static MinecraftProtocol protocol;
-	private static boolean sell = true;
-
-	private static ArrayList<String> words = new ArrayList<String>();
+	private static boolean sell = true, waslast = false;
+	private static List<String> welcoming = new ArrayList<String>(), words = new ArrayList<String>();
 
 	public static void main (String[] args) {
 		in = new Scanner(System.in);
-		
+
 		requestInfo(args.length > 0);
 
 		// USER = "yourusername@example.com";
@@ -61,7 +62,7 @@ public class TestPluginsReactBot implements SessionListener {
 			client.getSession().addListener(new TestPluginsReactBot());
 			client.getSession().setConnectTimeout(10);
 			client.getSession().connect();
-			
+
 			while (client.getSession().isConnected())
 				if (in.hasNextLine()) client.getSession().send(new ClientChatPacket(in.nextLine()));
 		} catch (Exception e) {
@@ -157,22 +158,45 @@ public class TestPluginsReactBot implements SessionListener {
 		if (message.startsWith("Reaction » ") || message.startsWith("Scramble » ")) return;
 		if (message.contains("»")) {
 			String username = message.split("»")[0].replaceAll("\\[.*?\\]", "").replace(" ", "");
-			if (username.equalsIgnoreCase(protocol.getProfile().getName())) return;
+			if (username.equalsIgnoreCase(protocol.getProfile().getName())) {
+				waslast = true;
+				return;
+			}
 			message = message.substring(message.indexOf("»")).toLowerCase();
 			while (message.startsWith(" ")) message = message.substring(1);
-			if (message.contains(protocol.getProfile().getName().toLowerCase())) {
-				if (message.matches(".*(what|url|link|info|give|github|download).*"))
+			if (message.contains(protocol.getProfile().getName().toLowerCase()) || waslast) {
+				if (message.matches(".*(hello|hi|hai|hey|hola|yo|bonjour).*"))
+					client.getSession().send(new ClientChatPacket("Hello, " + username + "."));
+				else if (message.matches(".*(how *(the *(hell|fuck))? *(are|r) *(you|u)*|(are|r) *(you|u) *a *(ro)?bot).*"))
+					client.getSession().send(new ClientChatPacket("I am the meaning of life, the essence of reality, " + username + "."));
+				else if (message.matches(".*(thanks|thx).*"))
+					client.getSession().send(new ClientChatPacket("You're welcome, " + username + "!"));
+				else if (message.matches(".*((wanna|want( *to)?)? *pvp).*"))
+					client.getSession().send(new ClientChatPacket("It wouldn't be fair: a perfectly optimized bot versus an unbelievably slow Human..."));
+				else if (message.matches(".*(what'?s *up|sup|how('?s| *is) *it *going?|what *(are|r) *(you|u) *doing?).*"))
+					client.getSession().send(new ClientChatPacket("I'm busy calculating the question which has 42 as answer, " + username + "."));
+				else if (message.matches(".*(url|link|github|download).*"))
 					client.getSession().send(new ClientChatPacket(username + ", my bot is available on GitHub: git.io/vwjTZ"));
-				else if (message.matches(".*(stop|shut *(the fuck)? *(up|down)|stfu|sleep|fuck( *you)?|fu).*"))
+				else if (message.matches(".*(stop|shut *(the fuck)? *(up|down)|stfu|sleep|(fuck|f) *(you|u)?|go *away|get *(the *fuck)? *out).*"))
 					client.getSession().send(new ClientChatPacket("Sorry " + username + ", I can only be stopped by " + protocol.getProfile().getName() + "."));
-				else
-					client.getSession().send(new ClientChatPacket("Sorry " + username + ", I'm a bot. I can't respond to you."));
-			} else if (message.matches(".*(hello|hi|hai|hey|hola|yo|bonjour).*"))
-				client.getSession().send(new ClientChatPacket("Hello, " + username + "."));
+				else if (message.matches(".*(how *much *is|what *is|what'?s|how much'?s).*")) {
+					String expr = message.split("(how *much *is *|what *is *|what'?s *|how much'?s *)")[1];
+					client.getSession().send(new ClientChatPacket(expr + " = " + new Expression(expr).eval()));
+				} else client.getSession().send(new ClientChatPacket(username + ", 16GB of RAM wasn't enough to understand your message."));
+			}
+			waslast = false;
 		} else if (message.startsWith("[+]")) {
 			String username = message.substring(3).replace(" ", "");
+			if (username.equalsIgnoreCase(protocol.getProfile().getName())) {
+				autoRespond(" [0] [A] SomeGuy  » how much is sqrt(4*3-2)");
+				return;
+			}
+			if (!welcoming.remove(username)) client.getSession().send(new ClientChatPacket("Welcome back, " + username + "."));
+			else client.getSession().send(new ClientChatPacket("Welcome on TestPlugins, " + username + "!"));
+		} else if (message.matches("This is [a-zA-Z0-9_]{3,16} first time joining!")) {
+			String username = message.replace("This is ", "").replace(" first time joining!", "");
 			if (username.equalsIgnoreCase(protocol.getProfile().getName())) return;
-			client.getSession().send(new ClientChatPacket("Welcome back, " + username + "."));
+			welcoming.add(username);
 		}
 	}
 
@@ -267,6 +291,7 @@ public class TestPluginsReactBot implements SessionListener {
 	public void disconnected (DisconnectedEvent event) {
 		System.out.println("Disconnected: " + event.getReason());
 		out.close(); in.close();
+		System.exit(0);
 	}
 
 }
