@@ -109,7 +109,6 @@ public class TestPluginsReactBot implements SessionListener {
 			String sfle = in.nextLine();
 			if (sfle != null && !sfle.isEmpty()) FILE = sfle;
 			else System.out.println("The specified file isn't valid (empty), using " + FILE + ".");
-			in.close();
 		} else {
 			USER = JOptionPane.showInputDialog(null, "Please enter your Minecraft username/email:", "TPReactionFarm", JOptionPane.QUESTION_MESSAGE);
 			if (USER == null || USER.isEmpty()) {
