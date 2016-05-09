@@ -86,13 +86,24 @@ public class TestPluginsReactBot implements SessionListener {
 
 	public static void requestInfo (boolean cmdline) {
 		if (cmdline) {
-			while (USER == null || USER.isEmpty()) {
-				System.out.print("Please enter your Minecraft username/email: ");
-				USER = in.nextLine();
-			}
-			while (PASS == null || PASS.isEmpty()) {
-				System.out.print("Please enter your Minecraft password: ");
-				PASS = in.nextLine();
+			if (System.console() != null) {
+				while (USER == null || USER.isEmpty()) {
+					System.out.print("Please enter your Minecraft username/email (hidden): ");
+					USER = new String(System.console().readPassword());
+				}
+				while (PASS == null || PASS.isEmpty()) {
+					System.out.print("Please enter your Minecraft password (hidden): ");
+					PASS = new String(System.console().readPassword());
+				}
+			} else {
+				while (USER == null || USER.isEmpty()) {
+					System.out.print("Please enter your Minecraft username/email: ");
+					USER = in.nextLine();
+				}
+				while (PASS == null || PASS.isEmpty()) {
+					System.out.print("Please enter your Minecraft password: ");
+					PASS = in.nextLine();
+				}
 			}
 			while (HOST == null || HOST.isEmpty()) {
 				System.out.print("Please enter the IP address of the target server: ");
@@ -165,32 +176,29 @@ public class TestPluginsReactBot implements SessionListener {
 			message = message.substring(message.indexOf("»")).toLowerCase();
 			while (message.startsWith(" ")) message = message.substring(1);
 			if (message.contains(protocol.getProfile().getName().toLowerCase()) || waslast) {
-				if (message.matches(".*(hello|hi|hai|hey|hola|yo|bonjour).*"))
+				if (message.matches("(|.* +)(hello|hi|hai|hey|hola|yo|bonjour)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("Hello, " + username + "."));
-				else if (message.matches(".*(how *(the *(hell|fuck))? *(are|r) *(you|u)*|(are|r) *(you|u) *a *(ro)?bot).*"))
+				else if (message.matches("(|.* +)(how *(the *(hell|fuck))? *(are|r) *(you|u)*|(are|r) *(you|u) *a *(ro)?bot)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("I am the meaning of life, the essence of reality, " + username + "."));
-				else if (message.matches(".*(thanks|thx).*"))
+				else if (message.matches("(|.* +)(thanks|thx)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("You're welcome, " + username + "!"));
-				else if (message.matches(".*((wanna|want( *to)?)? *pvp).*"))
+				else if (message.matches("(|.* +)((wanna|want( *to)?)? *pvp)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("It wouldn't be fair: a perfectly optimized bot versus an unbelievably slow Human..."));
-				else if (message.matches(".*(what'?s *up|sup|how('?s| *is) *it *going?|what *(are|r) *(you|u) *doing?).*"))
+				else if (message.matches("(|.* +)(what'?s *up|sup|how('?s| *is) *it *going?|what *(are|r) *(you|u) *doing?)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("I'm busy calculating the question which has 42 as answer, " + username + "."));
-				else if (message.matches(".*(url|link|github|download).*"))
+				else if (message.matches("(|.* +)(url|link|github|download)( +.*|)"))
 					client.getSession().send(new ClientChatPacket(username + ", my bot is available on GitHub: git.io/vwjTZ"));
-				else if (message.matches(".*(stop|shut *(the fuck)? *(up|down)|stfu|sleep|(fuck|f) *(you|u)?|go *away|get *(the *fuck)? *out).*"))
+				else if (message.matches("(|.* +)(stop|shut *(the fuck)? *(up|down)|stfu|sleep|(fuck|f) *(you|u)?|go *away|get *(the *fuck)? *out)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("Sorry " + username + ", I can only be stopped by " + protocol.getProfile().getName() + "."));
-				else if (message.matches(".*(how *much *is|what *is|what'?s|how much'?s).*")) {
+				else if (message.matches("(|.* +)(how *much *is|what *is|what'?s|how much'?s)( +.*|)")) {
 					String expr = message.split("(how *much *is *|what *is *|what'?s *|how much'?s *)")[1];
 					client.getSession().send(new ClientChatPacket(expr + " = " + new Expression(expr).eval()));
-				} else client.getSession().send(new ClientChatPacket(username + ", 16GB of RAM wasn't enough to understand your message."));
+				}
 			}
 			waslast = false;
 		} else if (message.startsWith("[+]")) {
 			String username = message.substring(3).replace(" ", "");
-			if (username.equalsIgnoreCase(protocol.getProfile().getName())) {
-				autoRespond(" [0] [A] SomeGuy  » how much is sqrt(4*3-2)");
-				return;
-			}
+			if (username.equalsIgnoreCase(protocol.getProfile().getName())) return;
 			if (!welcoming.remove(username)) client.getSession().send(new ClientChatPacket("Welcome back, " + username + "."));
 			else client.getSession().send(new ClientChatPacket("Welcome on TestPlugins, " + username + "!"));
 		} else if (message.matches("This is [a-zA-Z0-9_]{3,16} first time joining!")) {
