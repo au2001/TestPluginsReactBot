@@ -165,3 +165,8 @@ portal
 rankup
 guess
 river
+EZRanksPro
+weather
+true
+testplugins.com
+chest

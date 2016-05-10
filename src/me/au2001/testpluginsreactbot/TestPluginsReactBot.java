@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
+import org.spacehq.mc.auth.exception.request.InvalidCredentialsException;
 import org.spacehq.mc.protocol.MinecraftProtocol;
 import org.spacehq.mc.protocol.data.game.MessageType;
 import org.spacehq.mc.protocol.data.message.Message;
@@ -41,7 +42,7 @@ public class TestPluginsReactBot implements SessionListener {
 	private static Client client;
 	private static Scanner in;
 	private static MinecraftProtocol protocol;
-	private static boolean sell = true, waslast = false;
+	private static boolean sell = true, waslast = false, enabled = true;
 	private static List<String> welcoming = new ArrayList<String>(), words = new ArrayList<String>();
 
 	public static void main (String[] args) {
@@ -57,14 +58,29 @@ public class TestPluginsReactBot implements SessionListener {
 
 		try {
 			out = new PrintWriter(new BufferedWriter(new FileWriter(FILE, true)));
-			protocol = new MinecraftProtocol(USER, PASS, false, Proxy.NO_PROXY);
+			try {
+				protocol = new MinecraftProtocol(USER, PASS, false, Proxy.NO_PROXY);
+			} catch (InvalidCredentialsException e) {
+				System.out.println("Couldn't manage to login with your Minecraft account, trying an Offline version.");
+				protocol = new MinecraftProtocol(USER);
+			}
 			client = new Client(HOST, PORT, protocol, new TcpSessionFactory(Proxy.NO_PROXY));
 			client.getSession().addListener(new TestPluginsReactBot());
 			client.getSession().setConnectTimeout(10);
 			client.getSession().connect();
 
-			while (client.getSession().isConnected())
-				if (in.hasNextLine()) client.getSession().send(new ClientChatPacket(in.nextLine()));
+			while (client.getSession().isConnected()) {
+				if (in.hasNextLine()) {
+					String line = in.nextLine();
+					if (line.equalsIgnoreCase("OFF") || line.equalsIgnoreCase("/OFF")) {
+						enabled = false;
+						System.out.println("The ReactBot was disabled, type ON to reactivate it.");
+					} else if (line.equalsIgnoreCase("ON") || line.equalsIgnoreCase("/ON")) {
+						enabled = true;
+						System.out.println("The ReactBot was enabled, type OFF to deactivate it.");
+					} else client.getSession().send(new ClientChatPacket(line));
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -217,10 +233,11 @@ public class TestPluginsReactBot implements SessionListener {
 				if (!words.contains(word)) {
 					words.add(word); out.println(word);
 					System.out.println("Added word \"" + word + "\" to list (" + words.size() + " words in total).");
-				} else {
+				} else if (enabled) {
 					System.out.println("Failed to unscramble word \"" + word + "\".");
 				}
-			} else if (!message.getFullText().equals(" Scramble » ✖ Scramble Failed ✖")) {
+				if (!enabled) System.out.println(message);
+			} else if (!message.getFullText().equals(" Scramble » ✖ Scramble Failed ✖") && enabled) {
 				try {
 					JsonObject obj = new JsonParser().parse(message.getText()).getAsJsonObject();
 					if (obj.getAsJsonArray("extra").size() == 1) {
@@ -275,6 +292,8 @@ public class TestPluginsReactBot implements SessionListener {
 					System.out.println(message.getFullText().replaceAll("§[0-9a-fk-o]", ""));
 					autoRespond(message.getFullText().replaceAll("§[0-9a-fk-o]", ""));
 				}
+			} else {
+				System.out.println(message.getText().replaceAll("§[0-9a-fk-o]", ""));
 			}
 		} else if (event.getPacket() instanceof ServerSetSlotPacket) {
 			ServerSetSlotPacket packet = event.getPacket();
