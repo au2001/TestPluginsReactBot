@@ -170,3 +170,15 @@ weather
 true
 testplugins.com
 chest
+TeamFunny
+enderman
+DeluxeMenus
+planet
+Prison
+comment
+tokens
+birch
+Gary
+SpigotMC
+rewards
+Bukkit

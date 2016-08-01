@@ -196,7 +196,7 @@ public class TestPluginsReactBot implements SessionListener {
 					client.getSession().send(new ClientChatPacket("Hello, " + username + "."));
 				else if (message.matches("(|.* +)(how *(the *(hell|fuck))? *(are|r) *(you|u)*|(are|r) *(you|u) *a *(ro)?bot)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("I am the meaning of life, the essence of reality, " + username + "."));
-				else if (message.matches("(|.* +)(thanks|thx)( +.*|)"))
+				else if (message.matches("(|.* +)(thanks|thnx|thx)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("You're welcome, " + username + "!"));
 				else if (message.matches("(|.* +)((wanna|want( *to)?)? *pvp)( +.*|)"))
 					client.getSession().send(new ClientChatPacket("It wouldn't be fair: a perfectly optimized bot versus an unbelievably slow Human..."));
